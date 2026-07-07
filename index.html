@@ -1,0 +1,1215 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>freak Inc.｜狂うほど、好きか。— Film Production</title>
+<meta name="description" content="映像制作会社freak。映画予告編・ブランディング映像・MV。白い便箋の左下に、青いインクで書き出す。">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@400;500;600&family=Zen+Kaku+Gothic+New:wght@300;400;500;700&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Zen+Kurenaido&display=swap" rel="stylesheet">
+<link rel="preload" as="image" href="freak_logo_toka.png" fetchpriority="high">
+<style>
+/* ============================================================
+   freak Ver.C — 最終版
+   Aベース「青狂」+ Bの抜け感15〜20%。
+   白い便箋の左下に、青いインクで書き出す。
+   ネイティブスクロール / transform・opacityのみ /
+   例外はロゴ筆記アニメのstroke-dashoffset(指示書指定のマスク方式)
+   ============================================================ */
+
+:root{
+  --paper:#faf9f4;
+  --paper2:#f2f0e8;
+  --ink:#181b20;
+  --ink-soft:#4b5058;
+  --gray:#9aa0a3;
+  --blue:#1d4fc4;
+  --blue-deep:#132f7a;
+  --wash:rgba(29,79,196,.07);
+  --line:rgba(24,27,32,.16);
+  --disp:'Shippori Mincho', serif;
+  --body:'Zen Kaku Gothic New', sans-serif;
+  --en:'Cormorant Garamond', serif;
+  --hand:'Zen Kurenaido', sans-serif;
+}
+
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+html,body{overscroll-behavior-y:none;}
+body{
+  font-family:var(--body);
+  background:var(--paper);
+  color:var(--ink);
+  overflow-x:hidden;
+  -webkit-font-smoothing:antialiased;
+}
+body.locked{overflow:hidden;height:100dvh;}
+::selection{background:var(--blue);color:var(--paper);}
+img{max-width:100%;display:block;}
+a{color:inherit;}
+
+/* 紙の質感(静的) */
+body::before{
+  content:'';position:fixed;inset:0;z-index:6;pointer-events:none;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 260 260' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='p'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23p)' opacity='0.035'/%3E%3C/svg%3E");
+  background-size:260px 260px;
+  mix-blend-mode:multiply;
+}
+
+/* ============================================================
+   INTRO — 白い便箋に、ロゴが書かれる(初回のみ)
+   ============================================================ */
+#intro{
+  position:fixed;inset:0;z-index:9990;
+  background:var(--paper);
+  transition:opacity .7s ease;
+}
+#intro.away{opacity:0;pointer-events:none;}
+#intro.gone{display:none;}
+.intro-loading{
+  position:absolute;left:clamp(20px,8vw,110px);bottom:26px;
+  font-family:var(--hand);font-size:12px;letter-spacing:.14em;
+  color:var(--gray);
+  transition:opacity .5s ease;
+}
+#intro.away .intro-loading{opacity:0;}
+.intro-skip{
+  position:absolute;right:24px;bottom:22px;
+  background:none;border:none;cursor:pointer;
+  font-family:var(--body);font-weight:400;
+  font-size:10px;letter-spacing:.45em;color:var(--gray);
+  padding:12px 4px 12px 16px;
+  transition:color .3s;
+}
+.intro-skip:hover{color:var(--ink);}
+
+/* 筆記アニメ本体 — マスク方式(CSS-Tricks流)。
+   ガイドパスをstroke-dashoffsetで描き、本体PNGをマスク表示する */
+#logoFly{
+  position:fixed;top:0;left:0;z-index:9995;
+  width:300px; /* JSがスロット幅で上書き */
+  will-change:transform;
+  pointer-events:none;
+}
+#logoFly.fly{transition:transform .68s cubic-bezier(.55,.05,.25,1),opacity .3s ease;}
+#logoFly.off{opacity:0;}
+#logoFly svg,.sig svg{display:block;width:100%;height:auto;}
+.write-path{
+  stroke-dasharray:1000;
+  stroke-dashoffset:1000;
+}
+.writing .write-path{
+  transition:stroke-dashoffset 1.15s cubic-bezier(.5,.05,.45,.95);
+  stroke-dashoffset:0;
+}
+.written .write-path{stroke-dashoffset:0;}
+
+/* ============================================================
+   NAV — ロゴは左上に小さく常駐(名札。語るのはコピー)
+   ============================================================ */
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:900;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:16px clamp(20px,4vw,52px);
+  background:linear-gradient(180deg,rgba(250,249,244,.92) 0%,rgba(250,249,244,.7) 55%,rgba(250,249,244,0) 100%);
+  opacity:0;transition:opacity .8s ease .1s;
+  pointer-events:none;
+}
+body.ready nav{opacity:1;pointer-events:auto;}
+.nav-logo{display:block;line-height:0;}
+.nav-logo img{
+  width:60px;height:auto;
+  opacity:0;transition:opacity .35s ease;
+}
+.nav-logo img.on{opacity:1;}
+.nav-links{display:flex;gap:clamp(16px,2.4vw,30px);list-style:none;}
+.nav-links a{
+  text-decoration:none;color:var(--ink-soft);
+  font-size:11px;font-weight:500;letter-spacing:.3em;
+  transition:color .3s;
+}
+.nav-links a:hover{color:var(--blue);}
+@media (max-width:860px){
+  .nav-links li:nth-child(-n+4){display:none;}
+  nav{padding:12px 20px;}
+  .nav-logo img{width:52px;}
+}
+
+/* ============================================================
+   共通
+   ============================================================ */
+main{opacity:0;transition:opacity .5s ease;}
+body.ready main{opacity:1;}
+.wrap{max-width:1180px;margin:0 auto;padding:0 clamp(22px,5vw,60px);}
+section{position:relative;}
+
+.sec-head{
+  display:flex;align-items:baseline;gap:18px;
+  margin-bottom:clamp(46px,7vw,90px);
+}
+.sec-head .no{
+  font-family:var(--en);font-weight:300;font-style:italic;
+  font-size:15px;color:var(--blue);letter-spacing:.1em;
+}
+.sec-head .tx{
+  font-size:11px;font-weight:500;letter-spacing:.5em;
+  color:var(--ink-soft);text-transform:uppercase;
+}
+.sec-head .bar{flex:1;height:1px;background:var(--line);}
+
+/* 透かし見出し */
+.ghost{
+  position:absolute;z-index:0;
+  font-family:var(--en);font-weight:300;font-style:italic;
+  font-size:clamp(120px,20vw,300px);line-height:1;
+  color:rgba(24,27,32,.045);
+  pointer-events:none;user-select:none;white-space:nowrap;
+  will-change:transform;
+}
+.ghost.blue{color:rgba(29,79,196,.055);}
+
+/* リビール(発火早め・白紙防止) */
+.rv{opacity:0;transform:translateY(22px);transition:opacity .65s ease,transform .65s cubic-bezier(.16,1,.3,1);}
+.rv.vis{opacity:1;transform:translateY(0);}
+.rv-d1{transition-delay:.08s;}
+.rv-d2{transition-delay:.16s;}
+.rv-d3{transition-delay:.24s;}
+
+/* 抜け感の担当 — 手書きマイクロコピー(1画面に1箇所まで) */
+.micro{
+  font-family:var(--hand);
+  font-size:14.5px;letter-spacing:.1em;line-height:1.9;
+  color:var(--blue);
+  transform:rotate(-.4deg);
+}
+.micro.rv{transform:rotate(-.4deg) translateY(22px);}
+.micro.rv.vis{transform:rotate(-.4deg) translateY(0);}
+.micro-band{padding:clamp(20px,3vw,36px) 0 0;}
+
+/* ============================================================
+   HERO — 白い便箋の左下に、青インクで書き出す
+   上半分は余白。中央には何も置かない。
+   ============================================================ */
+.hero{
+  min-height:100svh;
+  position:relative;overflow:hidden;
+  background:var(--paper);
+}
+/* ロゴ筆記の定位置(不可視スロット。#logoFlyがここで書く) */
+.hero-logo-slot{
+  position:absolute;
+  left:clamp(20px,8vw,110px);
+  bottom:52vh;
+  width:min(280px,54vw);
+  aspect-ratio:1200/860;
+  pointer-events:none;
+}
+.hero-inner{
+  position:absolute;
+  left:clamp(20px,8vw,110px);
+  bottom:11vh;
+  max-width:60vw;
+}
+.hero-copy{
+  font-family:var(--disp);font-weight:500;
+  font-size:clamp(28px,4.8vw,54px);
+  letter-spacing:.16em;line-height:1.7;
+  white-space:nowrap;
+}
+/* 「好き」だけに青インクの手書き下線 */
+.hero-copy .u{
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 12' preserveAspectRatio='none'%3E%3Cpath d='M4 8 C 28 3.5, 58 9.5, 88 6 S 112 4.5, 117 6' stroke='%231d4fc4' stroke-width='2.6' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;
+  background-position:0 100%;
+  background-size:100% .14em;
+  padding-bottom:.1em;
+}
+.hero-sub{
+  margin-top:clamp(14px,2.2vh,24px);
+  font-family:var(--en);font-weight:400;
+  font-size:13px;letter-spacing:.3em;
+  color:var(--ink-soft);
+}
+.hero-cue{
+  display:flex;align-items:center;gap:10px;
+  margin-top:clamp(30px,5.5vh,58px);
+}
+.hero-cue .micro{font-size:14px;}
+.hero-cue svg{width:14px;height:26px;flex:0 0 auto;}
+.hero-cue svg path{stroke:var(--blue);stroke-width:1.6;fill:none;stroke-linecap:round;stroke-linejoin:round;}
+.hero-copy,.hero-sub,.hero-cue{
+  opacity:0;transform:translateY(14px);
+  transition:opacity .9s ease,transform .9s cubic-bezier(.16,1,.3,1);
+}
+body.ready .hero-copy{opacity:1;transform:translateY(0);transition-delay:.15s;}
+body.ready .hero-sub{opacity:1;transform:translateY(0);transition-delay:.32s;}
+body.ready .hero-cue{opacity:1;transform:rotate(0) translateY(0);transition-delay:.55s;}
+
+/* 推しC: 右下の小窓リール(フルスクリーン背景は封印) */
+.hero-reel{
+  position:absolute;
+  right:clamp(18px,5vw,64px);
+  bottom:10vh;
+  width:32vw;max-width:470px;
+  opacity:0;transform:translateY(16px);
+  transition:opacity 1s ease .5s,transform 1s cubic-bezier(.16,1,.3,1) .5s;
+}
+body.ready .hero-reel{opacity:1;transform:translateY(0);}
+.hero-reel .frame{
+  position:relative;aspect-ratio:16/9;
+  border:1px solid var(--blue); /* 罫線1pxのみ。角丸・影は禁止 */
+  background:
+    radial-gradient(56% 60% at 60% 40%,rgba(29,79,196,.14),transparent 72%),
+    var(--paper2);
+  overflow:hidden;
+}
+.hero-reel video{
+  position:absolute;inset:0;width:100%;height:100%;
+  object-fit:cover;
+  opacity:0;transition:opacity .9s ease;
+}
+.hero-reel video.playing{opacity:1;}
+.hero-reel figcaption{
+  margin-top:9px;text-align:right;
+  font-size:10.5px;font-weight:400;letter-spacing:.14em;
+  color:var(--gray);
+}
+@media (max-width:760px){
+  .hero{min-height:auto;padding:96px 0 64px;}
+  .hero-logo-slot{position:absolute;top:96px;bottom:auto;width:min(240px,56vw);}
+  .hero-inner{position:static;max-width:none;padding:calc(min(240px,56vw)*860/1200 + 40px) 22px 0;}
+  .hero-copy{white-space:normal;font-size:clamp(27px,8vw,38px);}
+  .hero-reel{position:static;width:auto;margin:44px 22px 0;}
+}
+
+/* ============================================================
+   01 宣言 MANIFESTO — フリークの連想
+   ============================================================ */
+.manifesto{
+  padding:clamp(130px,18vw,220px) 0;
+  overflow:hidden;
+}
+.manifesto .ghost{top:8%;right:-4%;}
+.mani-lines{position:relative;z-index:1;max-width:760px;}
+.mani-lines .blk{
+  display:block;
+  font-family:var(--disp);font-weight:500;
+  font-size:clamp(17px,2.6vw,26px);
+  line-height:2.35;letter-spacing:.12em;
+  margin-bottom:clamp(34px,4.5vw,52px);
+}
+.mani-lines .blk:last-child{margin-bottom:0;}
+.mani-lines em{font-style:normal;color:var(--blue);}
+/* 手書き注釈はこの画面ではゼロ。代わりに「0.5秒」に青インクの手書き丸だけ */
+.circled{
+  position:relative;display:inline-block;padding:0 .08em;
+}
+.circled::before{
+  content:'';position:absolute;inset:-.18em -.28em -.22em;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 160 64' preserveAspectRatio='none'%3E%3Cpath d='M84 6 C 34 4, 8 16, 7 32 C 6 50, 44 60, 84 59 C 128 58, 154 48, 153 31 C 152 14, 122 5, 74 7' stroke='%231d4fc4' stroke-width='2.4' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-size:100% 100%;
+  pointer-events:none;
+}
+
+/* ============================================================
+   02 記録 WORKS — foriio同期(肝)
+   ============================================================ */
+.works{padding:clamp(120px,17vw,210px) 0 0;overflow:hidden;}
+.works .ghost{top:-2%;left:-3%;}
+.works-head{position:relative;z-index:1;display:flex;align-items:flex-end;justify-content:space-between;gap:28px;flex-wrap:wrap;margin-bottom:clamp(50px,7vw,90px);}
+.works-head h2{
+  font-family:var(--disp);font-weight:500;
+  font-size:clamp(30px,5.6vw,64px);letter-spacing:.08em;line-height:1.5;
+}
+.works-head h2 em{font-style:normal;color:var(--blue);}
+.works-head p{font-size:12.5px;line-height:2.3;color:var(--ink-soft);max-width:340px;font-weight:400;letter-spacing:.05em;}
+
+/* --- foriio_works.js が生成するDOMへのスタイリング --- */
+#worksMount{position:relative;z-index:1;min-height:200px;}
+.foriio-works{counter-reset:fw;}
+
+/* 上位3件 — Ver.Aのエディトリアルな段組を継承 */
+.foriio-featured{
+  display:grid;grid-template-columns:repeat(12,1fr);
+  gap:clamp(40px,6vw,72px) clamp(16px,2vw,28px);
+}
+.foriio-card{
+  display:block;text-decoration:none;color:var(--ink);
+  counter-increment:fw;
+  position:relative;
+  opacity:0;transform:translateY(22px);
+  transition:opacity .65s ease,transform .65s cubic-bezier(.16,1,.3,1);
+}
+.foriio-card.vis{opacity:1;transform:translateY(0);}
+.foriio-card:nth-child(1){grid-column:1/9;}
+.foriio-card:nth-child(2){grid-column:5/13;margin-top:clamp(-20px,-2vw,-8px);}
+.foriio-card:nth-child(3){grid-column:2/10;}
+.foriio-thumb{
+  width:100%;aspect-ratio:16/9;object-fit:cover;
+  border:1px solid var(--line);
+  background:var(--paper2);
+  transition:border-color .4s,opacity .5s ease;
+}
+.foriio-card:hover .foriio-thumb{border-color:var(--blue);}
+/* ホバー再生の動画(JSが該当カードにだけ注入) */
+.foriio-card video.hoverv{
+  position:absolute;top:0;left:0;
+  width:100%;aspect-ratio:16/9;object-fit:cover;
+  border:1px solid var(--blue);
+  opacity:0;transition:opacity .5s ease;
+  pointer-events:none;
+}
+.foriio-card video.hoverv.playing{opacity:1;}
+.foriio-card-title{
+  display:flex;align-items:baseline;gap:14px;
+  padding:15px 2px 0;
+  font-family:var(--disp);font-weight:500;
+  font-size:clamp(14px,1.8vw,19px);letter-spacing:.05em;line-height:1.7;
+  transition:color .35s;
+}
+.foriio-card:hover .foriio-card-title{color:var(--blue);}
+.foriio-card-title::before{
+  content:counter(fw,decimal-leading-zero);
+  font-family:var(--en);font-style:italic;font-weight:400;
+  font-size:14px;color:var(--blue);flex:0 0 auto;
+}
+@media (max-width:760px){
+  .foriio-card:nth-child(1),.foriio-card:nth-child(2),.foriio-card:nth-child(3){grid-column:1/13;margin-top:0;}
+}
+
+/* 4件目以降 — タイトルのみの記録簿 */
+.foriio-list{
+  list-style:none;
+  margin-top:clamp(60px,9vw,110px);
+  border-top:1px solid var(--line);
+}
+.foriio-list-item{
+  counter-increment:fw;
+  border-bottom:1px solid var(--line);
+}
+.foriio-list-link{
+  display:grid;grid-template-columns:64px 1fr;
+  align-items:baseline;gap:clamp(14px,2.5vw,34px);
+  padding:clamp(18px,2.6vw,26px) 4px;
+  text-decoration:none;color:var(--ink);
+}
+.foriio-list-link::before{
+  content:counter(fw,decimal-leading-zero);
+  font-family:var(--en);font-style:italic;font-weight:400;
+  font-size:13px;color:var(--blue);
+}
+.foriio-list-link span,.foriio-list-link{
+  font-family:var(--disp);font-weight:500;
+  font-size:clamp(14px,2vw,18px);letter-spacing:.05em;line-height:1.8;
+}
+.foriio-list-link{transition:color .35s;}
+.foriio-list-link:hover{color:var(--blue);}
+@media (max-width:640px){
+  .foriio-list-link{grid-template-columns:40px 1fr;}
+}
+
+.works-more{
+  position:relative;z-index:1;
+  display:flex;justify-content:center;
+  padding:clamp(48px,7vw,72px) 0 clamp(90px,12vw,150px);
+}
+.works-more a{
+  text-decoration:none;color:var(--ink);
+  font-size:11px;font-weight:500;letter-spacing:.4em;
+  border:1px solid var(--ink);
+  padding:17px 44px;
+  position:relative;overflow:hidden;
+  transition:color .4s,border-color .4s;
+}
+.works-more a::before{
+  content:'';position:absolute;inset:0;background:var(--blue);
+  transform:translateY(101%);transition:transform .4s cubic-bezier(.7,0,.2,1);
+}
+.works-more a:hover{color:var(--paper);border-color:var(--blue);}
+.works-more a:hover::before{transform:translateY(0);}
+.works-more a span{position:relative;z-index:1;}
+
+/* ============ マーキー(静かな帯) ============ */
+.marquee{
+  overflow:hidden;white-space:nowrap;
+  border-top:1px solid var(--line);border-bottom:1px solid var(--line);
+  user-select:none;
+}
+.marquee-in{display:inline-flex;animation:mq 46s linear infinite;will-change:transform;}
+.marquee-in span{
+  display:inline-block;padding:15px 0;
+  font-family:var(--disp);font-weight:400;
+  font-size:13px;letter-spacing:.4em;color:var(--ink-soft);
+}
+.marquee-in span em{font-style:normal;color:var(--blue);padding:0 1.4em;font-family:var(--en);font-style:italic;}
+@keyframes mq{from{transform:translateX(0);}to{transform:translateX(-50%);}}
+
+/* ============================================================
+   03 狂い方 SERVICES — 控えめ・三分類等価
+   ============================================================ */
+.services{padding:clamp(110px,15vw,190px) 0;overflow:hidden;}
+.services .ghost{bottom:0;right:-4%;}
+.services h2{
+  position:relative;z-index:1;
+  font-family:var(--disp);font-weight:500;
+  font-size:clamp(26px,4.6vw,50px);letter-spacing:.1em;line-height:1.6;
+  margin-bottom:clamp(48px,7vw,84px);
+}
+.svc-grid{
+  position:relative;z-index:1;
+  display:grid;grid-template-columns:repeat(3,1fr);
+  gap:clamp(28px,4vw,56px);
+  border-top:1px solid var(--line);
+  padding-top:clamp(36px,4.5vw,52px);
+}
+.svc .en{
+  font-family:var(--en);font-style:italic;font-weight:400;
+  font-size:13px;letter-spacing:.22em;
+  color:var(--blue);margin-bottom:18px;
+}
+.svc h3{
+  font-family:var(--disp);font-weight:500;
+  font-size:clamp(16px,1.9vw,20px);letter-spacing:.08em;line-height:1.8;
+  margin-bottom:14px;
+}
+.svc p{font-size:12.5px;line-height:2.4;font-weight:400;color:var(--ink-soft);}
+@media (max-width:860px){
+  .svc-grid{grid-template-columns:1fr;}
+}
+
+/* ============================================================
+   04 名鑑 MEMBERS — データ駆動(JS配列に足せば増える)
+   ============================================================ */
+.members{padding:0 0 clamp(110px,15vw,190px);overflow:hidden;}
+.members .ghost{top:-4%;left:-2%;}
+.members-lead{
+  position:relative;z-index:1;
+  margin:calc(clamp(46px,7vw,90px) * -0.4) 0 clamp(46px,7vw,80px);
+}
+.members-lead h2{
+  font-family:var(--disp);font-weight:500;
+  font-size:clamp(26px,4.6vw,50px);letter-spacing:.1em;line-height:1.6;
+  margin-bottom:22px;
+}
+.members-lead p{font-size:12.5px;line-height:2.4;color:var(--ink-soft);max-width:620px;}
+.mem-grid{
+  position:relative;z-index:1;
+  display:grid;grid-template-columns:repeat(2,1fr);
+  gap:clamp(28px,4vw,56px);
+  max-width:920px;
+}
+.mem{padding-top:clamp(24px,3vw,36px);border-top:1px solid var(--ink);}
+.mem-name{font-family:var(--disp);font-weight:500;font-size:21px;letter-spacing:.16em;}
+.mem-en{font-family:var(--en);font-style:italic;font-weight:400;font-size:12.5px;letter-spacing:.14em;color:var(--gray);margin:7px 0 14px;}
+.mem-role{
+  display:inline-block;
+  font-size:10px;font-weight:500;letter-spacing:.2em;
+  color:var(--blue);border-bottom:1px solid var(--blue);
+  padding-bottom:3px;margin-bottom:18px;
+}
+.mem-bio{font-size:12.5px;line-height:2.3;color:var(--ink-soft);font-weight:400;}
+.mem-freak{
+  margin-top:16px;
+  font-size:11.5px;letter-spacing:.06em;color:var(--ink-soft);
+}
+.mem-freak b{font-family:var(--en);font-style:italic;font-weight:400;color:var(--blue);letter-spacing:.1em;}
+.mem-sns{display:flex;gap:14px;margin-top:18px;}
+.mem-sns a{line-height:0;transition:opacity .3s;}
+.mem-sns svg{width:17px;height:17px;stroke:var(--ink-soft);fill:none;stroke-width:1.5;transition:stroke .3s;}
+.mem-sns a:hover svg{stroke:var(--blue);}
+.mem-sns a.pending{opacity:.28;cursor:default;}
+@media (max-width:760px){.mem-grid{grid-template-columns:1fr;max-width:460px;}}
+
+/* ============================================================
+   05 正体 COMPANY
+   ============================================================ */
+.company{
+  background:var(--ink);color:var(--paper);
+  padding:clamp(110px,15vw,190px) 0;
+  overflow:hidden;
+}
+.company .ghost{color:rgba(250,249,244,.05);top:6%;right:-4%;}
+.company .sec-head .tx{color:rgba(250,249,244,.6);}
+.company .sec-head .bar{background:rgba(250,249,244,.2);}
+.co-grid{
+  position:relative;z-index:1;
+  display:grid;grid-template-columns:1fr 1.15fr;
+  gap:clamp(48px,7vw,100px);align-items:start;
+}
+.co-left h2{
+  font-family:var(--disp);font-weight:500;
+  font-size:clamp(22px,3.4vw,36px);line-height:1.9;letter-spacing:.1em;
+  margin-bottom:26px;
+}
+.co-left h2 em{font-style:normal;color:#7d9ff0;}
+.co-left p{
+  font-size:12.5px;line-height:2.5;letter-spacing:.05em;
+  color:rgba(250,249,244,.78);font-weight:300;
+}
+.co-table{list-style:none;border-top:1px solid rgba(250,249,244,.22);}
+.co-table li{
+  display:flex;gap:28px;padding:17px 4px;
+  border-bottom:1px solid rgba(250,249,244,.22);
+  font-size:13px;line-height:1.9;
+}
+.co-table .th{
+  flex:0 0 84px;font-weight:500;letter-spacing:.26em;
+  color:#7d9ff0;font-size:11px;padding-top:3px;
+}
+.co-table .td{font-weight:400;color:rgba(250,249,244,.88);}
+.co-table a{color:rgba(250,249,244,.88);text-decoration:underline;text-underline-offset:4px;transition:color .3s;}
+.co-table a:hover{color:#7d9ff0;}
+@media (max-width:860px){.co-grid{grid-template-columns:1fr;}}
+
+/* ============================================================
+   06 依頼 CONTACT
+   ============================================================ */
+.contact{
+  padding:clamp(130px,18vw,220px) 0 clamp(110px,15vw,180px);
+  text-align:center;position:relative;overflow:hidden;
+}
+.contact .ghost{
+  top:50%;left:50%;transform:translate(-50%,-50%);
+  font-size:clamp(200px,36vw,520px);
+  font-family:var(--disp);font-style:normal;font-weight:400;
+  color:rgba(29,79,196,.05);
+}
+.contact .in{position:relative;z-index:1;}
+.contact h2{
+  font-family:var(--disp);font-weight:500;
+  font-size:clamp(26px,5vw,56px);
+  letter-spacing:.12em;line-height:2;
+  margin-bottom:32px;
+}
+.contact h2 em{font-style:normal;color:var(--blue);}
+.contact .lead{
+  font-size:13px;line-height:2.6;font-weight:400;color:var(--ink-soft);
+  max-width:560px;margin:0 auto 52px;letter-spacing:.05em;
+}
+.contact-btn{
+  display:inline-block;text-decoration:none;
+  font-family:var(--disp);font-weight:500;
+  font-size:clamp(16px,2.2vw,21px);letter-spacing:.3em;
+  color:var(--ink);
+  border:1px solid var(--ink);
+  padding:22px clamp(44px,8vw,92px);
+  position:relative;overflow:hidden;
+  transition:color .45s;
+}
+.contact-btn::before{
+  content:'';position:absolute;inset:0;background:var(--blue);
+  transform:translateY(101%);transition:transform .45s cubic-bezier(.7,0,.2,1);
+}
+.contact-btn:hover{color:var(--paper);}
+.contact-btn:hover::before{transform:translateY(0);}
+.contact-btn span{position:relative;z-index:1;}
+.contact-note{
+  margin-top:24px;
+  font-size:11px;letter-spacing:.1em;color:var(--gray);
+}
+.contact-mail{
+  margin-top:14px;
+  font-family:var(--en);font-style:italic;font-weight:400;
+  font-size:14px;letter-spacing:.16em;color:var(--gray);
+}
+
+/* ============================================================
+   QUOTE — 名言(ページロードごとにランダム1本。さり気なく)
+   ============================================================ */
+.quote-band{
+  border-top:1px solid var(--line);
+  padding:clamp(56px,8vw,90px) 0;
+  text-align:center;
+}
+.quote-band blockquote{
+  font-family:var(--en);font-style:italic;font-weight:300;
+  font-size:clamp(15px,2vw,19px);letter-spacing:.05em;line-height:2;
+  color:var(--ink-soft);
+  max-width:640px;margin:0 auto;
+}
+.quote-band cite{
+  display:block;margin-top:14px;
+  font-style:italic;font-size:12.5px;letter-spacing:.18em;color:var(--gray);
+}
+
+/* ============================================================
+   FOOTER — 署名(作品の最後にサインする画家の作法)
+   ============================================================ */
+.sig-band{
+  border-top:1px solid var(--line);
+  padding:clamp(64px,9vw,110px) 0 clamp(36px,5vw,56px);
+  display:flex;flex-direction:column;align-items:center;gap:18px;
+}
+.sig{
+  width:120px;
+  transform:rotate(-2deg);
+}
+.sig-note{
+  font-family:var(--hand);font-size:11.5px;letter-spacing:.12em;
+  color:var(--ink-soft);opacity:.8;
+}
+footer{
+  padding:26px clamp(20px,4vw,52px) 34px;
+  display:flex;align-items:center;justify-content:space-between;
+  gap:16px;flex-wrap:wrap;
+  font-size:10px;letter-spacing:.22em;color:var(--gray);
+}
+footer .f-links{display:flex;gap:24px;}
+footer a{color:inherit;text-decoration:none;transition:color .3s;}
+footer a:hover{color:var(--blue);}
+
+/* ============ reduced motion ============ */
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.001s !important;animation-iteration-count:1 !important;transition-duration:.001s !important;}
+  html{scroll-behavior:auto;}
+  .write-path{stroke-dashoffset:0;}
+}
+</style>
+</head>
+<body class="locked">
+
+<!-- ═══════════ INTRO — 白い便箋に、ロゴが書かれる(初回のみ) ═══════════ -->
+<div id="intro" aria-hidden="true">
+  <div class="intro-loading">好きを、読み込んでいます…</div>
+  <button class="intro-skip" id="introSkip" type="button">skip →</button>
+</div>
+
+<!-- 筆記アニメ用ロゴ(マスク方式)。ヒーロー左下で書かれ、左上ヘッダーへ縮小着地する -->
+<div id="logoFly" aria-hidden="true">
+  <svg viewBox="0 0 1200 860" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <mask id="writeMask" maskUnits="userSpaceOnUse" x="0" y="0" width="1200" height="860">
+        <rect x="0" y="0" width="1200" height="860" fill="#000"/>
+        <!-- 筆順ガイドパス: fの縦画 → 横画〜r・ë・a → kのアセンダー → kの払い -->
+        <path class="write-path" pathLength="1000" fill="none" stroke="#fff" stroke-width="240" stroke-linecap="round"
+          d="M455,40 C380,170 260,420 170,590 C125,680 85,760 60,805
+             C100,700 120,560 145,435
+             C330,385 520,395 640,430 C760,465 860,430 930,415
+             C1010,330 1080,180 1145,55
+             C1105,175 1060,290 1015,395 C985,465 965,515 952,545
+             C955,520 950,490 955,470
+             C1020,430 1090,412 1155,400"/>
+      </mask>
+    </defs>
+    <image href="freak_logo_toka.png" width="1200" height="860" mask="url(#writeMask)"/>
+  </svg>
+</div>
+
+<!-- ═══════════ NAV — ロゴは左上に小さく常駐 ═══════════ -->
+<nav>
+  <a class="nav-logo" href="#top" id="navLogoBox"><img id="navLogoImg" src="freak_logo_toka.png" alt="frëak"></a>
+  <ul class="nav-links">
+    <li><a href="#manifesto">宣言</a></li>
+    <li><a href="#works">記録</a></li>
+    <li><a href="#services">狂い方</a></li>
+    <li><a href="#members">名鑑</a></li>
+    <li><a href="#company">正体</a></li>
+    <li><a href="#contact">依頼</a></li>
+  </ul>
+</nav>
+
+<main id="top">
+
+<!-- ═══════════ HERO — 白い便箋の左下に、青いインクで書き出す ═══════════
+     上半分は余白。中央には何も置かない(vAの自意識を消す最大の一手)。 -->
+<section class="hero">
+  <div class="hero-logo-slot" id="heroLogoSlot"></div>
+  <div class="hero-inner">
+    <h1 class="hero-copy">狂うほど、<span class="u">好き</span>か。</h1>
+    <p class="hero-sub">freak Inc. — Film Production</p>
+    <div class="hero-cue">
+      <span class="micro">ここから先、好きが濃くなります</span>
+      <svg viewBox="0 0 14 26" aria-hidden="true"><path d="M7.5 2 C 6 8, 8 13, 6.8 20 M3 16.5 C 4.5 19, 5.8 21.5, 6.8 23.5 C 8.3 21, 9.6 19.2, 11 17.5"/></svg>
+    </div>
+  </div>
+
+  <!-- 推しC: 右下の小窓リール。フルスクリーン背景動画は封印。
+       【ショーリール差し替えスロット】将来の正式ショーリールは videos/hero.mp4 を
+       同名で置き換えるだけで反映される(推奨: 16:9 / H.264 / 8〜10秒ループ / muted前提 / 〜1.5MB)。
+       音アリのフルサイズ版を用意する場合はこの figure にモーダル起動を追加すること。 -->
+  <figure class="hero-reel">
+    <div class="frame">
+      <video id="heroReel" muted loop playsinline preload="metadata" aria-label="freak showreel">
+        <source src="videos/hero.mp4" type="video/mp4">
+      </video>
+    </div>
+    <figcaption>↑ 最近つくったもの(音は出ません、まだ)</figcaption>
+  </figure>
+</section>
+
+<!-- ═══════════ 01 宣言 — フリークの連想 ═══════════ -->
+<section class="manifesto" id="manifesto">
+  <div class="ghost" id="ghostMani" aria-hidden="true">Manifesto</div>
+  <div class="wrap">
+    <div class="sec-head rv"><span class="no">01</span><span class="tx">Manifesto — 宣言</span><span class="bar"></span></div>
+    <div class="mani-lines">
+      <span class="blk rv">こんにちは。freakと申します。</span>
+      <span class="blk rv">ファッションフリーク、ギターフリーク——<br>
+      熱烈な愛好家のことを、人はフリークと呼びます。<br>
+      私たちは、<em>映像フリーク</em>です。</span>
+      <span class="blk rv"><span class="circled">0.5秒</span>のカットを入れ替えるために、<br>
+      何度も朝を迎えたことがあります。<br>
+      「そこまでやる?」と笑われるあたりが、<br>
+      たぶん、私たちの定位置です。</span>
+      <span class="blk rv">あなたが誰かに伝えたいことを、<br>
+      私たちは<em>狂ったように、丁寧に</em>つくります。</span>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ 02 記録 WORKS — foriio自動同期 ═══════════
+     foriio_works.js が foriio API から作品を取得して描画する(上位3件サムネ+以降テキスト)。
+     foriio側で並び替え・追加すれば次のページロードでここにも反映される。
+     API失敗時は同梱スナップショットに自動フォールバック(data-foriio-source属性で判別可)。 -->
+<section class="works" id="works">
+  <div class="ghost" aria-hidden="true">Works</div>
+  <div class="wrap">
+    <div class="sec-head rv"><span class="no">02</span><span class="tx">Works — 記録</span><span class="bar"></span></div>
+    <div class="works-head">
+      <h2 class="rv">実績と呼ぶには、<br><em>愛が重すぎる。</em></h2>
+      <p class="rv rv-d1">一本一本が、寝食を忘れた記録です。タイトルを押せば、その現物が観られます。<br>どうぞゆっくり。私たちはその間、そわそわしています。</p>
+    </div>
+    <div id="worksMount">
+      <noscript><a href="https://fori.io/freak" target="_blank" rel="noopener">作品一覧はforiioで公開しています → fori.io/freak</a></noscript>
+    </div>
+    <div class="works-more rv">
+      <a href="https://fori.io/freak" target="_blank" rel="noopener"><span>偏愛の全記録を見る</span></a>
+    </div>
+  </div>
+  <div class="marquee" aria-hidden="true">
+    <div class="marquee-in">
+      <span>映画予告編<em>freak</em>ブランディング映像<em>freak</em>ミュージックビデオ<em>freak</em>ショートフィルム<em>freak</em>企画・撮影・編集<em>freak</em></span><span>映画予告編<em>freak</em>ブランディング映像<em>freak</em>ミュージックビデオ<em>freak</em>ショートフィルム<em>freak</em>企画・撮影・編集<em>freak</em></span>
+    </div>
+  </div>
+  <div class="wrap micro-band"><p class="micro rv">全部観ると、少し長いです。私たちのせいです。</p></div>
+</section>
+
+<!-- ═══════════ 03 狂い方 SERVICES — 控えめ・三分類等価 ═══════════ -->
+<section class="services" id="services">
+  <div class="ghost blue" aria-hidden="true">Services</div>
+  <div class="wrap">
+    <div class="sec-head rv"><span class="no">03</span><span class="tx">Services — 狂い方</span><span class="bar"></span></div>
+    <h2 class="rv">狂い方は、三つある。</h2>
+    <div class="svc-grid">
+      <div class="svc rv">
+        <div class="en">Entertainment</div>
+        <h3>2時間を、90秒に燃やし直す。</h3>
+        <p>映画予告編、MV、ショートフィルム、ドキュメンタリー。作品をいちばん愛した観客として、その愛を圧縮します。楽曲は千回聴いてから、最初のカットを決めます。</p>
+      </div>
+      <div class="svc rv rv-d1">
+        <div class="en">Branding / Marketing</div>
+        <h3>御社の「好き」を、掘り起こす。</h3>
+        <p>会社紹介、採用動画、webCM、ブランドムービー。創業の理由、サービスへの想い——ご本人が照れて言えないことを、私たちが代わりに夢中で語ります。</p>
+      </div>
+      <div class="svc rv rv-d2">
+        <div class="en">Others</div>
+        <h3>まだ名前のない依頼も。</h3>
+        <p>対談映像、メイキング、配信企画、その他一式。「これ、映像でどうにかなりますか」から始まる仕事が、実はいちばん得意です。</p>
+      </div>
+    </div>
+  </div>
+  <div class="wrap micro-band"><p class="micro rv">つくっているのは、こういう人たちです。</p></div>
+</section>
+
+<!-- ═══════════ 04 名鑑 MEMBERS — データ駆動(下のMEMBERS配列に足せば増える) ═══════════ -->
+<section class="members" id="members">
+  <div class="ghost" aria-hidden="true">Members</div>
+  <div class="wrap">
+    <div class="sec-head rv"><span class="no">04</span><span class="tx">Members — 名鑑</span><span class="bar"></span></div>
+    <div class="members-lead">
+      <h2 class="rv">症状は違っても、病名は同じ。</h2>
+      <p class="rv rv-d1">企画する人、撮る人、刻む人。最初の一秒から最後の一秒まで、全員が同じ熱のまま通します。<br>少数精鋭、と言いたいところですが、正確には少数全員重症です。</p>
+    </div>
+    <!-- メンバーカードはJSがMEMBERS配列から生成 -->
+    <div class="mem-grid" id="memGrid"></div>
+  </div>
+  <div class="wrap micro-band"><p class="micro rv">ここまで読んだあなたとは、気が合う気がします。</p></div>
+</section>
+
+<!-- ═══════════ 05 正体 COMPANY ═══════════ -->
+<section class="company" id="company">
+  <div class="ghost" aria-hidden="true">Company</div>
+  <div class="wrap">
+    <div class="sec-head rv"><span class="no" style="color:#7d9ff0;">05</span><span class="tx">Company — 正体</span><span class="bar"></span></div>
+    <div class="co-grid">
+      <div class="co-left rv">
+        <h2>いちおう、<br>ちゃんとした<em>会社</em>です。</h2>
+        <p>登記も、納税も、締切も守ります。<br>「好き」の量以外は、いたって健全な株式会社です。</p>
+      </div>
+      <ul class="co-table rv rv-d1">
+        <li><span class="th">社名</span><span class="td">株式会社 freak（freak Inc.）</span></li>
+        <li><span class="th">代表</span><span class="td">山本 翼</span></li>
+        <li><span class="th">設立</span><span class="td">2024年3月</span></li>
+        <li><span class="th">所在地</span><span class="td">東京都杉並区（阿佐ヶ谷）</span></li>
+        <li><span class="th">事業</span><span class="td">映像企画・制作／ディレクション／撮影／編集</span></li>
+        <li><span class="th">連絡</span><span class="td"><a href="mailto:info@amovie48.com">info@amovie48.com</a></span></li>
+        <li><span class="th">SNS</span><span class="td">
+          <a href="https://www.instagram.com/tsubasa_freak" target="_blank" rel="noopener">Instagram</a>&nbsp;&nbsp;／&nbsp;&nbsp;<a href="https://www.facebook.com/tsubasa1560" target="_blank" rel="noopener">Facebook</a>
+        </span></li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ 06 依頼 CONTACT ═══════════ -->
+<section class="contact" id="contact">
+  <div class="ghost" aria-hidden="true">狂</div>
+  <div class="in wrap">
+    <div class="sec-head rv"><span class="no">06</span><span class="tx">Contact — 依頼</span><span class="bar"></span></div>
+    <h2 class="rv">その企画、<br><em>正気のまま</em>やる気ですか。</h2>
+    <p class="lead rv rv-d1">企画書がなくても、予算が固まっていなくても構いません。<br>「好き」が一滴でもあるなら、話は早い。まずは聞かせてください。こちらは全力で返します。</p>
+    <a class="contact-btn rv rv-d2" href="mailto:info@amovie48.com?subject=%E3%80%90%E4%BE%9D%E9%A0%BC%E3%80%91%E6%98%A0%E5%83%8F%E5%88%B6%E4%BD%9C%E3%81%AE%E7%9B%B8%E8%AB%87"><span>共犯になる</span></a>
+    <div class="contact-note rv rv-d3">相談は無料です。全力が返ってくる点だけ、ご了承ください。</div>
+    <div class="contact-mail rv rv-d3">info@amovie48.com</div>
+  </div>
+</section>
+
+</main>
+
+<!-- ═══════════ 名言 — ページロードごとにランダム1本(さり気なく) ═══════════ -->
+<div class="quote-band" id="quoteBand">
+  <blockquote id="quoteText"></blockquote>
+</div>
+
+<!-- ═══════════ FOOTER — 署名 ═══════════ -->
+<div class="sig-band">
+  <!-- フッターの署名: ビューポートに入ったら同じ筆記アニメで書かれる -->
+  <div class="sig" id="sigLogo" aria-hidden="true">
+    <svg viewBox="0 0 1200 860" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <mask id="writeMask2" maskUnits="userSpaceOnUse" x="0" y="0" width="1200" height="860">
+          <rect x="0" y="0" width="1200" height="860" fill="#000"/>
+          <path class="write-path" pathLength="1000" fill="none" stroke="#fff" stroke-width="240" stroke-linecap="round"
+            d="M455,40 C380,170 260,420 170,590 C125,680 85,760 60,805
+               C100,700 120,560 145,435
+               C330,385 520,395 640,430 C760,465 860,430 930,415
+               C1010,330 1080,180 1145,55
+               C1105,175 1060,290 1015,395 C985,465 965,515 952,545
+               C955,520 950,490 955,470
+               C1020,430 1090,412 1155,400"/>
+        </mask>
+      </defs>
+      <image href="freak_logo_toka.png" width="1200" height="860" mask="url(#writeMask2)"/>
+    </svg>
+  </div>
+  <div class="sig-note">最後まで観てくれて、どうも。</div>
+</div>
+<footer>
+  <span>&copy; 2026 freak Inc. — 今日もどこかで、編集しています。</span>
+  <div class="f-links">
+    <a href="https://fori.io/freak" target="_blank" rel="noopener">Portfolio</a>
+    <a href="https://www.instagram.com/tsubasa_freak" target="_blank" rel="noopener">Instagram</a>
+    <a href="https://www.facebook.com/tsubasa1560" target="_blank" rel="noopener">Facebook</a>
+  </div>
+</footer>
+
+<script src="foriio_works.js"></script>
+<script>
+(function(){
+  'use strict';
+
+  var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var noHover = window.matchMedia('(hover: none)').matches;
+
+  /* ============ データ: メンバー(ここに足せば増える) ============ */
+  var MEMBERS = [
+    {
+      name: '山本 翼',
+      en: 'Tsubasa Yamamoto',
+      roles: 'DIRECTOR / EDITOR / FOUNDER',
+      bio: '神戸生まれ、上智大学卒。企画・撮影・編集をひとりで完結させたがる悪癖の持ち主。2024年、その悪癖に社名をつけた。それがfreak。',
+      freak: '歴史・音楽・旅',
+      sns: [
+        { type: 'instagram', url: 'https://www.instagram.com/tsubasa_freak' },
+        { type: 'facebook',  url: 'https://www.facebook.com/tsubasa1560' }
+      ]
+    },
+    {
+      name: '板橋 哲平',
+      en: 'Teppei Itabashi',
+      roles: 'CINEMATOGRAPHER / EDITOR',
+      bio: '画づくりの求道者。1カットの奥行きに、誰よりも長く粘る。その粘りが、作品の緊張感になる。',
+      freak: '現在取材中です',
+      sns: [
+        { type: 'instagram', url: 'https://www.instagram.com/peipei_0382/' }
+      ]
+    }
+  ];
+
+  /* ============ データ: 映像の名言10選(ランダム1本表示) ============ */
+  var QUOTES = [
+    ['If it can be written, or thought, it can be filmed.', 'Stanley Kubrick'],
+    ['Drama is life with the dull bits cut out.', 'Alfred Hitchcock'],
+    ['Cinema is truth twenty-four times a second.', 'Jean-Luc Godard'],
+    ["Cinema is a matter of what's in the frame and what's out.", 'Martin Scorsese'],
+    ["To be an artist means never to avert one's eyes.", 'Akira Kurosawa'],
+    ['There are no rules in filmmaking. Only sins. And the cardinal sin is dullness.', 'Frank Capra'],
+    ['Make visible what, without you, might perhaps never have been seen.', 'Robert Bresson'],
+    ['Film as dream, film as music.', 'Ingmar Bergman'],
+    ['The enemy of art is the absence of limitations.', 'Orson Welles'],
+    ['The film of tomorrow will be an act of love.', 'François Truffaut']
+  ];
+
+  /* 上位3件サムネのホバー再生用: foriio作品ID → ローカル動画(該当があるものだけ) */
+  var VIDEO_MAP = {
+    '1281036': 'videos/work_01.mp4',  /* 透明なわたしたち 本予告 */
+    '2178649': 'videos/work_02.mp4',  /* PSYREN ティザーPV */
+    '1281021': 'videos/work_03.mp4'   /* 八犬伝 特報 */
+  };
+
+  /* ============ ハッシュ・スクロール復元 ============ */
+  var targetHash = (location.hash && location.hash.length > 1) ? location.hash : null;
+  if(targetHash){
+    try{ history.replaceState(null, '', location.pathname + location.search); }catch(e){}
+  }
+  if('scrollRestoration' in history){ history.scrollRestoration = 'manual'; }
+
+  /* ============ INTRO — ロゴ筆記 → 左上へ着地(初回のみ) ============ */
+  var intro = document.getElementById('intro');
+  var fly = document.getElementById('logoFly');
+  var slot = document.getElementById('heroLogoSlot');
+  var navImg = document.getElementById('navLogoImg');
+  var skipBtn = document.getElementById('introSkip');
+  var seen = false;
+  try{ seen = sessionStorage.getItem('freakvc_intro') === '1'; }catch(e){}
+  var timers = [];
+  var done = false;
+  function later(fn, ms){ timers.push(setTimeout(fn, ms)); }
+
+  function placeFlyAt(rect){
+    fly.style.width = rect.width + 'px';
+    fly.style.transformOrigin = '0 0';
+    fly.style.transform = 'translate(' + rect.left + 'px,' + rect.top + 'px)';
+  }
+
+  function endIntro(instant){
+    if(done) return;
+    done = true;
+    timers.forEach(clearTimeout);
+    try{ sessionStorage.setItem('freakvc_intro', '1'); }catch(e){}
+    document.body.classList.remove('locked');
+    document.body.classList.add('ready');
+    navImg.classList.add('on');
+    if(instant){
+      intro.classList.add('gone');
+      fly.style.display = 'none';
+    }else{
+      intro.classList.add('away');
+      fly.classList.add('off');
+      setTimeout(function(){ intro.classList.add('gone'); fly.style.display = 'none'; }, 800);
+    }
+    requestAnimationFrame(function(){ requestAnimationFrame(function(){
+      var t = targetHash ? document.querySelector(targetHash) : null;
+      if(t){
+        window.scrollTo(0, t.getBoundingClientRect().top + window.scrollY);
+        try{ history.replaceState(null, '', targetHash); }catch(e){}
+      }else{
+        window.scrollTo(0, 0);
+      }
+    }); });
+  }
+  if(skipBtn) skipBtn.addEventListener('click', function(){ endIntro(true); });
+
+  function runIntro(){
+    /* 1. ヒーロー左下のスロット位置で筆記(1.15秒) */
+    var sr = slot.getBoundingClientRect();
+    placeFlyAt(sr);
+    /* リフローを挟んでから書き始める */
+    requestAnimationFrame(function(){ requestAnimationFrame(function(){
+      fly.classList.add('writing');
+    }); });
+    /* 2. 0.35秒置いて、縮小しながら左上ヘッダー定位置へ(0.68秒) */
+    later(function(){
+      if(done) return;
+      var nr = navImg.getBoundingClientRect();
+      var scale = nr.width / sr.width;
+      fly.classList.add('fly');
+      fly.style.transform = 'translate(' + nr.left + 'px,' + nr.top + 'px) scale(' + scale + ')';
+    }, 1550);
+    /* 3. 着地したら本物のnavロゴに交代し、便箋が開く */
+    later(function(){ endIntro(false); }, 2280);
+  }
+
+  if(reduced || targetHash || seen || !slot || !fly){
+    if(fly) fly.style.display = 'none';
+    endIntro(true);
+  }else{
+    runIntro();
+  }
+
+  /* ============ HERO 小窓リール(画面内のみ再生・音なし) ============ */
+  var heroReel = document.getElementById('heroReel');
+  if(heroReel && !reduced){
+    heroReel.addEventListener('playing', function(){ heroReel.classList.add('playing'); });
+    heroReel.addEventListener('error', function(){ heroReel.style.display = 'none'; }, true);
+    var reelObs = new IntersectionObserver(function(es){
+      es.forEach(function(e){
+        if(heroReel.style.display === 'none') return;
+        if(e.isIntersecting){ var p = heroReel.play(); if(p && p.catch) p.catch(function(){}); }
+        else{ heroReel.pause(); }
+      });
+    }, { threshold: 0 });
+    reelObs.observe(heroReel);
+  }
+
+  /* ============ リビール(発火早め・白紙防止) ============ */
+  var obs = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(e.isIntersecting){ e.target.classList.add('vis'); obs.unobserve(e.target); }
+    });
+  }, { threshold: 0.03, rootMargin: '0px 0px 18% 0px' });
+  document.querySelectorAll('.rv').forEach(function(el){ obs.observe(el); });
+  /* 宣言のブロックは順に */
+  document.querySelectorAll('.mani-lines .blk').forEach(function(el, i){
+    el.style.transitionDelay = (i * 0.1) + 's';
+  });
+
+  /* ============ WORKS — foriio自動同期 + ホバー再生(推しD) ============ */
+  var mount = document.getElementById('worksMount');
+  var playing = null; /* 同時再生は常に1本まで */
+  function playOne(v){
+    if(playing && playing !== v){ playing.pause(); playing.classList.remove('playing'); }
+    playing = v;
+    var p = v.play();
+    if(p && p.catch) p.catch(function(){});
+  }
+  function stopOne(v){
+    if(v){ v.pause(); v.classList.remove('playing'); }
+    if(playing === v) playing = null;
+  }
+  function enhanceCard(card, videoSrc){
+    var v = document.createElement('video');
+    v.className = 'hoverv';
+    v.muted = true; v.loop = true; v.playsInline = true;
+    v.setAttribute('playsinline', '');
+    v.preload = 'none';
+    v.dataset.src = videoSrc;
+    v.setAttribute('aria-hidden', 'true');
+    v.addEventListener('playing', function(){ v.classList.add('playing'); });
+    v.addEventListener('error', function(){ v.remove(); }, true);
+    card.appendChild(v);
+    function ensureSrc(){ if(!v.src) v.src = v.dataset.src; }
+    if(noHover){
+      /* モバイル: 画面中央に来たカードのみ自動再生(1本だけ) */
+      var io = new IntersectionObserver(function(es){
+        es.forEach(function(e){
+          if(e.isIntersecting && e.intersectionRatio >= 0.6){ ensureSrc(); playOne(v); }
+          else{ stopOne(v); }
+        });
+      }, { threshold: [0, 0.6] });
+      io.observe(card);
+    }else{
+      /* PC: ホバーした1枚だけが生きる */
+      card.addEventListener('mouseenter', function(){ ensureSrc(); playOne(v); });
+      card.addEventListener('mouseleave', function(){ stopOne(v); });
+    }
+  }
+  if(mount && typeof renderForiioWorks === 'function'){
+    renderForiioWorks(mount, { featuredCount: 3, maxItems: 12, titleMaxLength: 46 })
+      .then(function(result){
+        /* リビール(カードは順に) */
+        mount.querySelectorAll('.foriio-card').forEach(function(card, i){
+          card.style.transitionDelay = (i * 0.08) + 's';
+          obs.observe(card);
+          /* 該当ローカル動画がある作品だけ、触れると応える */
+          if(!reduced){
+            var m = (card.getAttribute('href') || '').match(/works\/(\d+)/);
+            if(m && VIDEO_MAP[m[1]]) enhanceCard(card, VIDEO_MAP[m[1]]);
+          }
+        });
+      })
+      .catch(function(err){ console.warn('[vC] works render failed:', err); });
+  }
+
+  /* ============ MEMBERS — データ駆動描画 ============ */
+  var ICONS = {
+    instagram: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4.2"/><circle cx="17.2" cy="6.8" r="1" fill="currentColor" stroke="none"/></svg>',
+    facebook: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14.5 21v-7h2.6l.5-3.2h-3.1V8.6c0-.93.5-1.6 1.7-1.6h1.5V4.2c-.6-.08-1.4-.2-2.3-.2-2.4 0-4 1.4-4 4.2v2.6H8.5V14h2.9v7"/></svg>'
+  };
+  var memGrid = document.getElementById('memGrid');
+  if(memGrid){
+    MEMBERS.forEach(function(m, i){
+      var card = document.createElement('div');
+      card.className = 'mem rv' + (i % 3 === 1 ? ' rv-d1' : i % 3 === 2 ? ' rv-d2' : '');
+      var sns = '';
+      if(m.sns && m.sns.length){
+        sns = '<div class="mem-sns">' + m.sns.map(function(s){
+          var pend = s.pending;
+          return '<a href="' + (pend ? '#' : s.url) + '"' +
+            (pend ? ' class="pending" aria-label="' + s.type + '(準備中)" onclick="return false"'
+                  : ' target="_blank" rel="noopener" aria-label="' + s.type + '"') +
+            '>' + (ICONS[s.type] || '') + '</a>';
+        }).join('') + '</div>';
+      }
+      card.innerHTML =
+        '<div class="mem-name">' + m.name + '</div>' +
+        '<div class="mem-en">' + m.en + '</div>' +
+        '<div class="mem-role">' + m.roles + '</div>' +
+        '<p class="mem-bio">' + m.bio + '</p>' +
+        (m.freak ? '<p class="mem-freak"><b>Private freak:</b> ' + m.freak + '</p>' : '') +
+        sns;
+      memGrid.appendChild(card);
+      obs.observe(card);
+    });
+  }
+
+  /* ============ 名言 — ランダム1本 ============ */
+  var qEl = document.getElementById('quoteText');
+  if(qEl){
+    var q = QUOTES[Math.floor(Math.random() * QUOTES.length)];
+    qEl.innerHTML = '“' + q[0] + '”<cite>— ' + q[1] + '</cite>';
+  }
+
+  /* ============ フッター署名 — 見えたら書く ============ */
+  var sig = document.getElementById('sigLogo');
+  if(sig){
+    if(reduced){
+      sig.classList.add('written');
+    }else{
+      var sigObs = new IntersectionObserver(function(es){
+        es.forEach(function(e){
+          if(e.isIntersecting){ sig.classList.add('writing'); sigObs.unobserve(sig); }
+        });
+      }, { threshold: 0.4 });
+      sigObs.observe(sig);
+    }
+  }
+
+  /* ============ 透かし見出しの微パララックス(transformのみ・rAF) ============ */
+  var ghosts = [];
+  document.querySelectorAll('.ghost').forEach(function(g){
+    if(g.parentElement.classList.contains('contact')) return;
+    ghosts.push({ el: g, sec: g.parentElement });
+  });
+  var ticking = false;
+  function onScroll(){
+    if(ticking) return;
+    ticking = true;
+    requestAnimationFrame(function(){
+      var vh = window.innerHeight || 1;
+      for(var m = 0; m < ghosts.length; m++){
+        var r = ghosts[m].sec.getBoundingClientRect();
+        if(r.bottom < 0 || r.top > vh) continue;
+        var prog = (vh - r.top) / (vh + r.height);
+        ghosts[m].el.style.transform = 'translateY(' + ((prog - .5) * -60) + 'px)';
+      }
+      ticking = false;
+    });
+  }
+  window.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+
+  /* ============ スムーススクロール ============ */
+  document.querySelectorAll('a[href^="#"]').forEach(function(a){
+    a.addEventListener('click', function(e){
+      var id = this.getAttribute('href');
+      if(id.length < 2) return;
+      var t = document.querySelector(id);
+      if(t){ e.preventDefault(); t.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth' }); }
+    });
+  });
+})();
+</script>
+</body>
+</html>
