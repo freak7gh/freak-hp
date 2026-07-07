@@ -264,12 +264,29 @@ body.ready .hero-reel{opacity:1;transform:translateY(0);}
     var(--paper2);
   overflow:hidden;
 }
-.hero-reel video{
+.hero-reel .frame svg{
   position:absolute;inset:0;width:100%;height:100%;
-  object-fit:cover;
-  opacity:0;transition:opacity .9s ease;
 }
-.hero-reel video.playing{opacity:1;}
+/* 筆記ループ: 3.6s書く → 2s静止 → 消えて → 再筆記(8s周期) */
+.hero-write-path{
+  stroke-dasharray:1000;
+  stroke-dashoffset:1000;
+  animation:heroWrite 8s linear 1.6s infinite;
+}
+.hero-sig-ink{
+  opacity:0;
+  animation:heroInk 8s linear 1.6s infinite;
+}
+@keyframes heroWrite{
+  0%{stroke-dashoffset:1000;animation-timing-function:cubic-bezier(.5,.05,.45,.95);}
+  45%{stroke-dashoffset:0;}
+  79%{stroke-dashoffset:0;}
+  80%,100%{stroke-dashoffset:1000;}
+}
+@keyframes heroInk{
+  0%,70%{opacity:1;}
+  78%,100%{opacity:0;}
+}
 .hero-reel figcaption{
   margin-top:9px;text-align:right;
   font-size:10.5px;font-weight:400;letter-spacing:.14em;
@@ -664,6 +681,8 @@ footer a:hover{color:var(--blue);}
   *,*::before,*::after{animation-duration:.001s !important;animation-iteration-count:1 !important;transition-duration:.001s !important;}
   html{scroll-behavior:auto;}
   .write-path{stroke-dashoffset:0;}
+  .hero-write-path{animation:none !important;stroke-dashoffset:0;}
+  .hero-sig-ink{animation:none !important;opacity:1;}
 }
 </style>
 </head>
@@ -724,17 +743,28 @@ footer a:hover{color:var(--blue);}
     </div>
   </div>
 
-  <!-- 推しC: 右下の小窓リール。フルスクリーン背景動画は封印。
-       【ショーリール差し替えスロット】将来の正式ショーリールは videos/hero.mp4 を
-       同名で置き換えるだけで反映される(推奨: 16:9 / H.264 / 8〜10秒ループ / muted前提 / 〜1.5MB)。
-       音アリのフルサイズ版を用意する場合はこの figure にモーダル起動を追加すること。 -->
-  <figure class="hero-reel">
+  <!-- 推しC改: 右下の小窓。動画は封印し、イントロと同じガイドパス(マスク方式)で
+       ロゴが繰り返し書かれる。reduced-motion時は静止ロゴ。 -->
+  <figure class="hero-reel" aria-label="frëak logo handwriting loop">
     <div class="frame">
-      <video id="heroReel" muted loop playsinline preload="metadata" aria-label="freak showreel">
-        <source src="videos/hero.mp4" type="video/mp4">
-      </video>
+      <svg viewBox="0 0 1200 860" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <defs>
+          <mask id="heroWriteMask" maskUnits="userSpaceOnUse" x="0" y="0" width="1200" height="860">
+            <rect x="0" y="0" width="1200" height="860" fill="#000"/>
+            <path class="hero-write-path" pathLength="1000" fill="none" stroke="#fff" stroke-width="240" stroke-linecap="round"
+              d="M455,40 C380,170 260,420 170,590 C125,680 85,760 60,805
+                 C100,700 120,560 145,435
+                 C330,385 520,395 640,430 C760,465 860,430 930,415
+                 C1010,330 1080,180 1145,55
+                 C1105,175 1060,290 1015,395 C985,465 965,515 952,545
+                 C955,520 950,490 955,470
+                 C1020,430 1090,412 1155,400"/>
+          </mask>
+        </defs>
+        <image class="hero-sig-ink" href="freak_logo_toka.png" width="1200" height="860" mask="url(#heroWriteMask)"/>
+      </svg>
     </div>
-    <figcaption>↑ 最近つくったもの(音は出ません、まだ)</figcaption>
+    <figcaption>↑ 社名です(何度でも書きます)</figcaption>
   </figure>
 </section>
 
@@ -1038,20 +1068,7 @@ footer a:hover{color:var(--blue);}
     runIntro();
   }
 
-  /* ============ HERO 小窓リール(画面内のみ再生・音なし) ============ */
-  var heroReel = document.getElementById('heroReel');
-  if(heroReel && !reduced){
-    heroReel.addEventListener('playing', function(){ heroReel.classList.add('playing'); });
-    heroReel.addEventListener('error', function(){ heroReel.style.display = 'none'; }, true);
-    var reelObs = new IntersectionObserver(function(es){
-      es.forEach(function(e){
-        if(heroReel.style.display === 'none') return;
-        if(e.isIntersecting){ var p = heroReel.play(); if(p && p.catch) p.catch(function(){}); }
-        else{ heroReel.pause(); }
-      });
-    }, { threshold: 0 });
-    reelObs.observe(heroReel);
-  }
+  /* HERO 小窓は動画を廃止し、CSSループの筆記モーション(.hero-write-path)に一本化 */
 
   /* ============ リビール(発火早め・白紙防止) ============ */
   var obs = new IntersectionObserver(function(entries){
