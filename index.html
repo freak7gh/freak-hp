@@ -257,40 +257,21 @@ body.ready .hero-cue{opacity:1;transform:rotate(0) translateY(0);transition-dela
 }
 body.ready .hero-reel{opacity:1;transform:translateY(0);}
 .hero-reel .frame{
-  position:relative;aspect-ratio:16/9;
-  border:1px solid var(--blue); /* 罫線1pxのみ。角丸・影は禁止 */
-  background:
-    radial-gradient(56% 60% at 60% 40%,rgba(29,79,196,.14),transparent 72%),
-    var(--paper2);
-  overflow:hidden;
+  position:relative;aspect-ratio:1200/860;
+  /* 枠・背景なし — 紙にそのまま書かれる(フッター署名と同じ) */
 }
 .hero-reel .frame svg{
   position:absolute;inset:0;width:100%;height:100%;
 }
-/* 筆記ループ: 3.6s書く → 2s静止 → 消えて → 再筆記(8s周期) */
+/* 筆記: 一度だけ書いて、そのまま止まる */
 .hero-write-path{
   stroke-dasharray:1000;
   stroke-dashoffset:1000;
-  animation:heroWrite 8s linear 1.6s infinite;
+  animation:heroWrite 3.6s cubic-bezier(.5,.05,.45,.95) 1.6s forwards;
 }
-.hero-sig-ink{
-  opacity:0;
-  animation:heroInk 8s linear 1.6s infinite;
-}
+.hero-sig-ink{opacity:1;}
 @keyframes heroWrite{
-  0%{stroke-dashoffset:1000;animation-timing-function:cubic-bezier(.5,.05,.45,.95);}
-  45%{stroke-dashoffset:0;}
-  79%{stroke-dashoffset:0;}
-  80%,100%{stroke-dashoffset:1000;}
-}
-@keyframes heroInk{
-  0%,70%{opacity:1;}
-  78%,100%{opacity:0;}
-}
-.hero-reel figcaption{
-  margin-top:9px;text-align:right;
-  font-size:10.5px;font-weight:400;letter-spacing:.14em;
-  color:var(--gray);
+  to{stroke-dashoffset:0;}
 }
 @media (max-width:760px){
   .hero{min-height:auto;padding:96px 0 64px;}
@@ -764,7 +745,6 @@ footer a:hover{color:var(--blue);}
         <image class="hero-sig-ink" href="freak_logo_toka.png" width="1200" height="860" mask="url(#heroWriteMask)"/>
       </svg>
     </div>
-    <figcaption>↑ 社名です(何度でも書きます)</figcaption>
   </figure>
 </section>
 
